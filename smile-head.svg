@@ -1,0 +1,55 @@
+<svg width="132" height="114" viewBox="0 0 132 114" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="smile-head">
+<rect id="Rectangle 10" x="65.1429" y="11.1724" width="1.71429" height="16.7586" fill="#1E1E1E"/>
+<g id="left ear">
+<g id="Rectangle 8">
+<path d="M0 47.6896C0 46.0328 1.34315 44.6897 3 44.6897H12V89.3793H3C1.34315 89.3793 0 88.0362 0 86.3793V47.6896Z" fill="#263541"/>
+<mask id="stroke0_105_129" fill="white">
+<path d="M0 47.6896C0 46.0328 1.34315 44.6897 3 44.6897H12V89.3793H3C1.34315 89.3793 0 88.0362 0 86.3793V47.6896Z"/>
+</mask>
+<path d="M12 44.6897H3C1.34315 44.6897 0 46.0328 0 47.6896V86.3793C0 88.0362 1.34315 89.3793 3 89.3793H12V44.6897Z" stroke-width="2" stroke="#5E6573" mask="url(#stroke0_105_129)"/>
+</g>
+<rect id="Rectangle 9" x="3.42857" y="50.2759" width="3.42857" height="33.5172" rx="1" fill="#5CC8FF"/>
+</g>
+<g id="right ear">
+<g id="Rectangle 8_2">
+<path d="M132 47.6896C132 46.0328 130.657 44.6897 129 44.6897H120V89.3793H129C130.657 89.3793 132 88.0362 132 86.3793V47.6896Z" fill="#263541"/>
+<mask id="stroke1_105_129" fill="white">
+<path d="M132 47.6896C132 46.0328 130.657 44.6897 129 44.6897H120V89.3793H129C130.657 89.3793 132 88.0362 132 86.3793V47.6896Z"/>
+</mask>
+<path d="M120 44.6897H129C130.657 44.6897 132 46.0328 132 47.6896V86.3793C132 88.0362 130.657 89.3793 129 89.3793H120V44.6897Z" stroke-width="2" stroke="#5E6573" mask="url(#stroke1_105_129)"/>
+</g>
+<rect id="Rectangle 9_2" width="3.42857" height="33.5172" rx="1" transform="matrix(-1 0 0 1 128.571 50.2759)" fill="#5CC8FF"/>
+</g>
+<g id="Ellipse 1">
+<use xlink:href="#stroke2_105_129" fill="#5CC8FF"/>
+<mask id="stroke3_105_129" fill="white">
+<use xlink:href="#stroke2_105_129"/>
+</mask>
+<path d="M72 6.51724C72 10.1166 69.3137 13.0345 66 13.0345C62.6863 13.0345 60 10.1166 60 6.51724C60 2.91787 62.6863 0 66 0C69.3137 0 72 2.91787 72 6.51724Z" stroke-width="0.2" stroke="black" mask="url(#stroke3_105_129)"/>
+</g>
+<rect id="Rectangle 42" x="51" y="106" width="32" height="8" rx="3" fill="#1E2027"/>
+<rect id="Rectangle 1" x="10.2857" y="26.069" width="111.429" height="81.931" rx="11" fill="#DDD9D2"/>
+<rect id="Rectangle 2" x="20.5714" y="37.2414" width="90.8571" height="59.5862" rx="5" fill="#07090B"/>
+<g id="left eye heart">
+<g id="Group">
+<path id="Vector" d="M39.866 52.8877H45.5609V56.0516H48.7248V52.8877H55.0525V56.0516H58.2164V62.3793H55.0525V65.5432H51.8886V68.707H48.7248V71.8709H45.5609V68.707H42.3971V65.5432H39.2332V62.3793H36.0693V56.0516H39.2332V52.8877H39.866Z" fill="#8FE6FF" stroke-width="1.5" stroke-miterlimit="2" stroke-linecap="square" stroke="#8FE6FF"/>
+<path id="Vector_2" d="M39.866 56.6844H41.7643V58.5827H39.866V56.6844Z" stroke-width="1.5" stroke-miterlimit="2" stroke-linecap="square" stroke="#8FE6FF"/>
+</g>
+</g>
+<g id="right eye heart">
+<path id="Vector_3" d="M77.3571 52.1379H82.8214V55.4353H85.8571V52.1379H91.9286V55.4353H94.9643V62.0302H91.9286V65.3276H88.8929V68.625H85.8571V71.9224H82.8214V68.625H79.7857V65.3276H76.75V62.0302H73.7143V55.4353H76.75V52.1379H77.3571Z" fill="#8FE6FF" stroke-width="1.5" stroke-miterlimit="2" stroke-linecap="square" stroke="#8FE6FF"/>
+<path id="Vector_4" d="M77.3571 56.0948H79.1786V58.0733H77.3571V56.0948Z" stroke-width="1.5" stroke-miterlimit="2" stroke-linecap="square" stroke="#8FE6FF"/>
+</g>
+<g id="Mouth smile">
+<rect id="Rectangle 3" x="53.1429" y="81.931" width="3.72414" height="3.42857" transform="rotate(-90 53.1429 81.931)" fill="#8FE6FF"/>
+<rect id="Rectangle 7" x="75.4286" y="81.931" width="3.72414" height="3.42857" transform="rotate(-90 75.4286 81.931)" fill="#8FE6FF"/>
+<rect id="Rectangle 4" x="56.5714" y="81.931" width="5.14286" height="1.86207" fill="#8FE6FF"/>
+<rect id="Rectangle 6" x="70.2857" y="81.931" width="5.14286" height="1.86207" fill="#8FE6FF"/>
+<rect id="Rectangle 5" x="61.7143" y="83.7931" width="8.57143" height="3.72414" fill="#8FE6FF"/>
+</g>
+</g>
+<defs>
+<path id="stroke2_105_129" d="M72 6.51724C72 10.1166 69.3137 13.0345 66 13.0345C62.6863 13.0345 60 10.1166 60 6.51724C60 2.91787 62.6863 0 66 0C69.3137 0 72 2.91787 72 6.51724Z"/>
+</defs>
+</svg>
