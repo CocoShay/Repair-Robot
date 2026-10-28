@@ -286,6 +286,119 @@ const NS = 'http://www.w3.org/2000/svg';
 const stage = $('#stage'), cam = $('#cam'), robot = $('#robot'), door = $('#door'), powerBtn = $('#powerBtn');
 const headImg = $('#headImg'), svg = $('#interior'), bin = $('#bin'), instr = $('#instr');
 
+/* ---------- Sound effects (synthesised with the Web Audio API, no audio files) ---------- */
+const Sfx = (() => {
+  let ctx = null, master = null, noise = null;
+  const last = {};            // per-sound cooldown timestamps
+  const voices = [];          // currently playing voices, oldest first
+  const MAX_VOICES = 3;
+
+  // Browsers only allow audio after a user gesture, so the context is created on the first one.
+  function unlock(){
+    if (!ctx){
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      ctx = new AC();
+      const comp = ctx.createDynamicsCompressor();
+      comp.threshold.value = -18; comp.ratio.value = 4;
+      master = ctx.createGain();
+      master.gain.value = 0.22;
+      master.connect(comp).connect(ctx.destination);
+      noise = ctx.createBuffer(1, ctx.sampleRate * 0.2, ctx.sampleRate);
+      const ch = noise.getChannelData(0);
+      for (let i = 0; i < ch.length; i++) ch[i] = Math.random()*2 - 1;
+    }
+    if (ctx.state === 'suspended') ctx.resume();
+  }
+  ['pointerdown','keydown','touchend'].forEach(ev => addEventListener(ev, unlock, {capture:true, passive:true}));
+
+  // Starts a voice: returns its output gain node, or null if audio isn't available / still cooling down.
+  function voice(name, cooldown, length){
+    if (!ctx || ctx.state !== 'running') return null;
+    const now = ctx.currentTime;
+    if (last[name] && now - last[name] < cooldown) return null;
+    last[name] = now;
+    // keep overlap down: fade out the oldest voice when too many are playing
+    while (voices.length >= MAX_VOICES){
+      const old = voices.shift();
+      old.gain.cancelScheduledValues(now);
+      old.gain.setTargetAtTime(0, now, 0.02);
+    }
+    const out = ctx.createGain();
+    out.connect(master);
+    voices.push(out);
+    setTimeout(() => { const i = voices.indexOf(out); if (i > -1) voices.splice(i, 1); out.disconnect(); }, (length + 0.2)*1000);
+    return out;
+  }
+  function tone(out, type, freq, start, dur, peak, freqEnd){
+    const t = ctx.currentTime + start;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, t);
+    if (freqEnd) o.frequency.exponentialRampToValueAtTime(freqEnd, t + dur);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(peak, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(out);
+    o.start(t); o.stop(t + dur + 0.02);
+  }
+
+  return {
+    // Correct placement: short mechanical click (filtered noise tick + tiny metallic blip)
+    click(){
+      const out = voice('click', 0.08, 0.15); if (!out) return;
+      const t = ctx.currentTime;
+      const src = ctx.createBufferSource(); src.buffer = noise;
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 3200; bp.Q.value = 2.5;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.9, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
+      src.connect(bp).connect(g).connect(out);
+      src.start(t); src.stop(t + 0.06);
+      tone(out, 'square', 1900, 0.004, 0.05, 0.12, 1300);
+      tone(out, 'sine', 420, 0, 0.07, 0.35, 180);
+    },
+    // Wrong placement: soft, short low "bonk"
+    error(){
+      const out = voice('error', 0.25, 0.25); if (!out) return;
+      tone(out, 'triangle', 260, 0, 0.16, 0.35, 170);
+      tone(out, 'sine', 195, 0.07, 0.14, 0.2, 140);
+    },
+    // Repair step completed: two-note positive chime
+    chime(){
+      const out = voice('chime', 0.3, 0.6); if (!out) return;
+      tone(out, 'sine', 880, 0, 0.35, 0.3);
+      tone(out, 'sine', 1318.5, 0.08, 0.45, 0.26);
+      tone(out, 'triangle', 2637, 0.08, 0.2, 0.04);
+    },
+    // Power button: start-up sweep rising in pitch
+    power(){
+      const out = voice('power', 1, 1.0); if (!out) return;
+      const t = ctx.currentTime;
+      const o = ctx.createOscillator(), lp = ctx.createBiquadFilter(), g = ctx.createGain();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(90, t); o.frequency.exponentialRampToValueAtTime(720, t + 0.75);
+      lp.type = 'lowpass'; lp.Q.value = 6;
+      lp.frequency.setValueAtTime(300, t); lp.frequency.exponentialRampToValueAtTime(3200, t + 0.75);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.16, t + 0.08);
+      g.gain.setValueAtTime(0.16, t + 0.6);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.85);
+      o.connect(lp).connect(g).connect(out);
+      o.start(t); o.stop(t + 0.9);
+      tone(out, 'sine', 180, 0, 0.8, 0.12, 1440);
+    },
+    // System online: three rising electronic tones, the last one held with a shimmer
+    online(){
+      const out = voice('online', 2, 1.5); if (!out) return;
+      [[523.25, 0, 0.22], [783.99, 0.14, 0.22], [1046.5, 0.28, 0.9]].forEach(([f, s, d]) => {
+        tone(out, 'triangle', f, s, d, 0.24);
+        tone(out, 'sine', f*2.005, s, d*0.8, 0.05);
+      });
+      tone(out, 'sine', 1567.98, 0.36, 0.8, 0.06);
+    }
+  };
+})();
+
 // Native asset sizes (viewBox units of the SVGs)
 const NATIVE = { battery:{w:34,h:54}, screw:{w:16,h:76}, memory:{w:33.22,h:41.17} };
 
@@ -502,6 +615,7 @@ function powerActivate(e){
   if (busy) return;
   busy = true;
   setStep('booting');
+  Sfx.power();
   powerBtn.classList.add('pressed');
   setTimeout(() => powerBtn.classList.remove('pressed'), 150);
   setTimeout(() => { robot.classList.remove('off'); document.body.classList.add('alive-scene'); }, 250);
@@ -514,6 +628,7 @@ function powerActivate(e){
     headImg.classList.remove('flicker');
     busy = false;
     setStep('online');
+    Sfx.online();
     $('#online').classList.add('show');
     $('#restart').focus({preventScroll:true});
   }, 1700);
@@ -557,6 +672,7 @@ svg.addEventListener('pointermove', e => {
 function endWire(e){
   if (!wireDrag || e.pointerId !== wireDrag.id) return;
   wireDrag = null;
+  Sfx.error();
   tweenPlug(REST, 450, t => 1 - Math.pow(1 - t, 3) + Math.sin(t*Math.PI)*.12);
 }
 svg.addEventListener('pointerup', endWire);
@@ -575,8 +691,10 @@ function connectWire(){
   wireDrag = null; busy = true;
   document.body.dataset.step = 'wired';   // stops glows immediately
   tweenPlug(SOCKET, 140, t => t, () => {
+    Sfx.click();
     $('#slotWire').classList.add('done');
     addCheck(60, 7);
+    setTimeout(Sfx.chime, 160);
     setTimeout(() => { busy = false; setStep('battery'); }, 650);
   });
 }
@@ -645,11 +763,12 @@ function returnHome(d, after){
 function dragEnd(e){
   if (!drag || e.pointerId !== drag.id) return;
   const d = drag; drag = null;
-  if (d.part === 'screw'){ returnHome(d); return; }
+  if (d.part === 'screw'){ Sfx.error(); returnHome(d); return; }
   const slot = $(d.part === 'battery' ? '#slotBattery' : '#slotMemory');
   slot.classList.remove('over');
   if (!d.over){
     // wrong place → back to the Parts Bin
+    Sfx.error();
     returnHome(d, () => { const c = d.el.closest('.cell'); c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake'); });
     return;
   }
@@ -663,6 +782,8 @@ function dragEnd(e){
     d.el.closest('.cell').classList.add('empty');
     target.classList.add('on');
     slot.classList.add('done');
+    Sfx.click();
+    setTimeout(Sfx.chime, 160);
     if (d.part === 'battery'){
       addCheck(44, 46);
       setTimeout(() => { busy = false; setStep('screw'); }, 700);
@@ -694,6 +815,8 @@ function tightenScrew(){
     const head = $('#screwHead'); head.classList.remove('spin','loose');
     $('#slotScrew').classList.add('done');
     addCheck(SCREW.x + 6, SCREW.y - 5);
+    Sfx.click();
+    setTimeout(Sfx.chime, 160);
     d.g.style.transform = '';
     returnHome(d, () => { busy = false; setStep('memory'); });
   }, 1450);
