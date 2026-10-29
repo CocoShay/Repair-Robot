@@ -20,14 +20,16 @@ img{-webkit-user-drag:none;user-drag:none}
 
 /* ---------- Lab background / stage ---------- */
 #backdrop{position:fixed;inset:-60px;background:url("BG.jpg.png") center/cover;filter:blur(22px) brightness(.38) saturate(1.3)}
-#stage{position:absolute;left:50%;top:50%;width:1448px;height:1086px;transform-origin:center center;
+#stage{position:absolute;left:0;top:0;width:1448px;height:1086px;transform-origin:0 0;
   background:url("BG.jpg.png") 0 0/100% 100% no-repeat;box-shadow:0 0 120px 40px rgba(7,18,38,.9)}
 #vignette{position:fixed;inset:0;pointer-events:none;
   background:radial-gradient(ellipse 55% 65% at 50% 56%,rgba(7,18,38,0) 40%,rgba(7,18,38,.55) 100%),
              linear-gradient(rgba(10,24,52,.12),rgba(10,24,52,.12))}
-/* camera: zooms onto the robot body while the panel is open */
-#cam{position:absolute;inset:0;transform-origin:724px 560px;transition:transform .8s cubic-bezier(.45,0,.2,1)}
-#cam.zoom{transform:scale(var(--z,1.6))}
+#cam{position:absolute;inset:0}
+/* focus mode: dims the lab while the robot is open (interactive objects sit above this layer) */
+#dim{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .8s ease;
+  background:radial-gradient(ellipse 300px 360px at 724px 500px,rgba(3,8,20,.2),rgba(3,8,20,.7) 100%)}
+body.focus #dim{opacity:1}
 
 #platformGlow{position:absolute;left:444px;top:668px;width:560px;height:150px;border-radius:50%;
   background:radial-gradient(ellipse at center,rgba(63,216,255,.75) 0%,rgba(47,140,255,.35) 40%,rgba(47,140,255,0) 70%);
@@ -36,7 +38,7 @@ img{-webkit-user-drag:none;user-drag:none}
 @keyframes breathe{50%{opacity:.6}}
 
 /* ---------- Robot (native asset units, scaled up) ---------- */
-#robot{position:absolute;left:545.5px;top:196px;width:170px;height:270px;transform-origin:0 0;transform:scale(2.1)}
+#robot{position:absolute;left:528.5px;top:144px;width:170px;height:270px;transform-origin:0 0;transform:scale(2.3)}
 #robotInner{position:absolute;inset:0}
 .alive-scene #robotInner{animation:bob 3s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-3px)}}
@@ -51,6 +53,29 @@ img{-webkit-user-drag:none;user-drag:none}
   opacity:0;pointer-events:none;mix-blend-mode:screen}
 #bodyWrap{position:absolute;left:29.5px;top:110px;width:111px;height:107px;z-index:3;perspective:600px}
 #interior{position:absolute;inset:0;width:100%;height:100%;overflow:visible;touch-action:none}
+/* cyan halo around the open body */
+#bodyWrap::before{content:"";position:absolute;inset:-2.5px;border-radius:7px;pointer-events:none;opacity:0;transition:opacity .6s;
+  box-shadow:0 0 0 .8px rgba(63,216,255,.95),0 0 8px 2px rgba(63,216,255,.6),0 0 24px 8px rgba(63,216,255,.28)}
+body.focus #bodyWrap::before{opacity:1}
+
+/* robot head screen: SYSTEM CHECK checklist while the robot is open */
+#diag{position:absolute;left:20.6px;top:37.2px;width:90.9px;height:59.6px;border-radius:5px;padding:3.6px 5.5px;overflow:hidden;
+  background:repeating-linear-gradient(0deg,rgba(63,216,255,.05) 0 .6px,transparent .6px 1.6px),linear-gradient(#0b2040,#06101f);
+  box-shadow:inset 0 0 0 .5px rgba(63,216,255,.7),inset 0 0 7px rgba(63,216,255,.35);
+  font-family:'Orbitron',sans-serif;color:#cfe8ff;opacity:0;transition:opacity .5s;pointer-events:none}
+#robot.diag #diag{opacity:1}
+#diag h4{margin:0 0 2.4px;font-size:3.7px;letter-spacing:.45px;color:var(--cyan);display:flex;justify-content:space-between}
+#diag h4 b{color:var(--yellow);font-weight:800}
+#diag ol{list-style:none;margin:0;padding:0;display:grid;gap:1.5px}
+#diag li{display:flex;align-items:center;gap:2.6px;font-size:4.5px;font-weight:600;line-height:5px;color:#7b9cc4;transition:color .3s}
+#diag .dot{width:5px;height:5px;border-radius:50%;border:.6px solid currentColor;display:grid;place-items:center;font-size:3.6px;line-height:1;color:transparent;flex:none}
+#diag li.current{color:var(--yellow)}
+#diag li.current .dot{animation:blink 1s steps(2) infinite}
+#diag li.done{color:var(--green)}
+#diag li.done .dot{background:var(--green);border-color:var(--green);color:#06231a;font-weight:900;animation:pop .4s cubic-bezier(.3,1.6,.5,1)}
+#diag .bar{margin-top:2.6px;height:1.6px;border-radius:1px;background:#18304f;overflow:hidden}
+#diag .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--green));transition:width .5s}
+@keyframes blink{50%{box-shadow:0 0 2px var(--yellow);background:rgba(255,210,63,.35)}}
 #door{position:absolute;inset:0;transform-origin:0 50%;transition:transform .75s cubic-bezier(.5,.05,.25,1.1);
   outline:none;transform-style:preserve-3d}
 #door .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:filter .3s}
@@ -100,9 +125,9 @@ img{-webkit-user-drag:none;user-drag:none}
 @keyframes flicker{0%{opacity:1}15%{opacity:.2}30%{opacity:1}45%{opacity:.1}60%{opacity:1}75%{opacity:.4}100%{opacity:1}}
 
 /* ---------- Interior SVG states ---------- */
-.slot-outline{fill:rgba(63,216,255,.04);stroke:var(--cyan);stroke-width:.6;stroke-dasharray:2 1.4;opacity:.4;transition:opacity .25s,fill .25s}
-.slot-ghost{opacity:.12;filter:grayscale(1) brightness(1.6)}
-.slot-label{font:600 3.2px 'Orbitron',sans-serif;fill:#7fb6e6;letter-spacing:.3px;opacity:.75}
+.slot-outline{fill:rgba(63,216,255,.06);stroke:var(--cyan);stroke-width:.6;stroke-dasharray:2 1.4;opacity:.55;transition:opacity .25s,fill .25s}
+.slot-ghost{opacity:.2;filter:grayscale(1) brightness(1.9)}
+.slot-label{font:600 3.2px 'Orbitron',sans-serif;fill:#b5dcff;letter-spacing:.3px;opacity:.9}
 .target .slot-outline{opacity:1;stroke-width:.8;animation:svgPulse 1.3s ease-in-out infinite}
 .target .slot-label{fill:var(--yellow);opacity:1}
 .target.over .slot-outline{fill:rgba(63,216,255,.28);stroke-dasharray:none;animation:none;filter:url(#glow)}
@@ -138,16 +163,7 @@ img{-webkit-user-drag:none;user-drag:none}
   box-shadow:0 10px 30px rgba(0,0,0,.35),inset 0 0 18px rgba(63,216,255,.06);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .panel h3{margin:0 0 10px;font:700 11px/1 'Orbitron',sans-serif;letter-spacing:2px;color:var(--cyan)}
 
-#progress{position:fixed;left:20px;top:20px;padding:14px 18px 12px;min-width:150px;z-index:10}
-#progress ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
-#progress li{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;color:var(--muted);transition:color .3s}
-.dot{width:20px;height:20px;border-radius:50%;border:2px solid #44597a;display:grid;place-items:center;font-size:12px;line-height:1;color:transparent;transition:all .3s;flex:none}
-#progress li.current{color:var(--yellow)}
-#progress li.current .dot{border-color:var(--yellow);box-shadow:0 0 8px rgba(255,210,63,.6)}
-#progress li.done{color:var(--green)}
-#progress li.done .dot{border-color:var(--green);background:var(--green);color:#06231a;font-weight:900;animation:pop .4s cubic-bezier(.3,1.6,.5,1)}
-
-#instr{position:fixed;left:50%;top:20px;transform:translateX(-50%);padding:12px 26px 11px;text-align:center;z-index:10;
+#instr{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);padding:12px 26px 11px;text-align:center;z-index:10;
   transition:opacity .25s;max-width:calc(100vw - 40px)}
 #instr .main{font:800 clamp(17px,2.2vw,24px)/1.15 'Orbitron',sans-serif;color:var(--yellow);letter-spacing:.5px;text-shadow:0 0 12px rgba(255,210,63,.35)}
 #instr .sub{margin-top:5px;font-size:14px;color:#c4d3e8}
@@ -155,29 +171,48 @@ img{-webkit-user-drag:none;user-drag:none}
 #instr.nudge{animation:nudge .4s}
 @keyframes nudge{20%,60%{transform:translateX(calc(-50% - 6px))}40%,80%{transform:translateX(calc(-50% + 6px))}}
 
-#bin{position:fixed;right:20px;top:50%;transform:translate(calc(100% + 40px),-50%);padding:14px 14px 10px;z-index:10;
-  transition:transform .6s cubic-bezier(.3,1.3,.5,1),opacity .4s}
-#bin.show{transform:translate(0,-50%)}
-#bin.dim{opacity:.6}
-#bin .cells{display:flex;flex-direction:column;gap:10px}
-.cell{position:relative;width:118px;border-radius:12px;background:linear-gradient(#0f2142,#0a1730);border:1px solid #1d3762;
-  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:10px 6px 8px;gap:6px;transition:border-color .3s,box-shadow .3s}
-.cell .well{display:grid;place-items:center;flex:1;width:100%}
-.cell span{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.5px}
-.part{display:block;touch-action:none;transition:transform .18s,filter .3s,opacity .3s;opacity:.4;filter:grayscale(.7);cursor:not-allowed}
-.part.active{opacity:1;filter:drop-shadow(0 0 6px var(--cyan)) drop-shadow(0 0 2px var(--cyan));cursor:grab;animation:float 1.6s ease-in-out infinite}
-.part.active:hover{transform:scale(1.1);animation:none}
-.part.lifted{visibility:hidden}
-.part.used{visibility:hidden}
-.cell.active{border-color:var(--cyan);box-shadow:0 0 14px rgba(63,216,255,.35),inset 0 0 12px rgba(63,216,255,.12)}
-.cell.active span{color:var(--yellow)}
-.cell .grip{position:absolute;top:6px;right:7px;font:700 9px/1 'Orbitron',sans-serif;letter-spacing:1px;color:#0b2440;background:var(--yellow);
-  border-radius:4px;padding:3px 4px;opacity:0;transition:opacity .3s}
-.cell.active .grip{opacity:1}
-.cell.empty::after{content:"✓ installed";position:absolute;inset:auto 0 28px;text-align:center;font-size:11px;color:var(--green);font-weight:700}
-@keyframes float{50%{transform:translateY(-4px)}}
-.cell.shake{animation:cellShake .35s}
-@keyframes cellShake{25%,75%{transform:translateX(-4px)}50%{transform:translateX(4px)}}
+/* ---------- Scene pickups: shelf items + tool drawer ---------- */
+.part{position:absolute;display:block;touch-action:none;transition:transform .18s,filter .3s;cursor:default}
+.part.active{filter:drop-shadow(0 0 5px var(--cyan)) drop-shadow(0 0 12px rgba(63,216,255,.8));cursor:grab;animation:float 1.6s ease-in-out infinite}
+.part.active:hover{transform:scale(1.12) translateY(-4px);animation:none;filter:drop-shadow(0 0 7px #9ff0ff) drop-shadow(0 0 16px var(--cyan))}
+.part.lifted,.part.used{visibility:hidden}
+.part.nope{animation:nope .35s}
+@keyframes float{50%{transform:translateY(-5px)}}
+@keyframes nope{25%,75%{transform:translateX(-4px)}50%{transform:translateX(4px)}}
+#pickBattery{left:101px;top:327px;width:54.4px;height:86.4px}
+#pickMemory{left:258.5px;top:348px;width:53.2px;height:65.9px}
+.pad{position:absolute;width:86px;height:18px;margin-left:-43px;border-radius:50%;pointer-events:none;opacity:0;transition:opacity .3s;
+  background:radial-gradient(ellipse at center,rgba(63,216,255,.85),rgba(63,216,255,0) 70%)}
+[data-step=battery] #padBattery,[data-step=memory] #padMemory{opacity:1;animation:pulse 1.3s ease-in-out infinite}
+#padBattery{left:128px;top:404px} #padMemory{left:285px;top:404px}
+
+#drawer{position:absolute;inset:0;pointer-events:none}
+#drawer svg{position:absolute;left:0;top:0;width:1448px;height:1086px;overflow:visible}
+#drawerTray{opacity:0;transition:opacity .15s}
+#drawer.open #drawerTray{opacity:1;transition-delay:.05s}
+#drawer .front{transition:transform .55s cubic-bezier(.3,1.25,.5,1);pointer-events:visiblePainted;outline:none}
+#drawer.open .front{transform:translate(20px,15px)}
+#drawer .body{fill:#2b2e36;stroke:#121419;stroke-width:2.5;stroke-linejoin:round;transition:fill .2s}
+#drawer .strip{stroke:#4fd6ff;stroke-width:7;stroke-linecap:round}
+#drawer .ring{fill:none;stroke:var(--cyan);stroke-width:3;stroke-linejoin:round;opacity:0}
+[data-step=drawer] #drawer .front{cursor:pointer}
+[data-step=drawer] #drawer .ring{animation:pulse 1.3s ease-in-out infinite}
+[data-step=drawer] #drawer .front:hover,[data-step=drawer] #drawer .front:focus-visible{transform:translate(4px,3px)}
+[data-step=drawer] #drawer .front:hover .body{fill:#3a3f4b}
+#driverClip{position:absolute;inset:0;pointer-events:none;clip-path:polygon(0 0,320px 0,320px 718px,0 773px)}
+#pickDriver{left:116.5px;top:676px;width:23.2px;height:110.2px;pointer-events:auto;opacity:0;transform:translateY(90px);
+  transition:transform .5s cubic-bezier(.3,1.3,.5,1),opacity .2s,filter .3s}
+#drawer.open #pickDriver{opacity:1;transform:none;transition-delay:.2s,.2s,0s}
+#drawer.open #pickDriver.active{animation:float 1.6s ease-in-out .8s infinite}
+#drawer.open #pickDriver.active:hover{transform:scale(1.12) translateY(-4px);animation:none}
+
+.hint{--tx:-50%;position:absolute;transform:translate(var(--tx),-100%);font:800 17px/1 'Orbitron',sans-serif;letter-spacing:1px;color:#0b2440;background:var(--yellow);
+  padding:7px 11px 6px;border-radius:7px;box-shadow:0 0 14px rgba(255,210,63,.65);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .3s}
+.hint.l{--tx:-24%}
+.hint::after{content:"";position:absolute;left:calc(var(--tx) * -1);bottom:-7px;margin-left:-7px;border:7px solid transparent;border-bottom:0;border-top-color:var(--yellow)}
+[data-step=battery] #hintBattery,[data-step=memory] #hintMemory,[data-step=drawer] #hintDrawer,[data-step=screw] #hintDriver{opacity:1;animation:hintBob 1.2s ease-in-out infinite}
+@keyframes hintBob{50%{transform:translate(var(--tx),calc(-100% - 6px))}}
+#hintBattery{left:128px;top:312px} #hintMemory{left:285px;top:334px} #hintDrawer{left:118px;top:712px} #hintDriver{left:128px;top:654px}
 
 .ghost{position:fixed;z-index:50;pointer-events:none;filter:drop-shadow(0 8px 10px rgba(0,0,0,.45)) drop-shadow(0 0 6px var(--cyan));transform:scale(1.08)}
 .ghost.anim{transition:left .28s cubic-bezier(.3,1.3,.5,1),top .28s cubic-bezier(.3,1.3,.5,1),width .28s,height .28s}
@@ -185,7 +220,7 @@ img{-webkit-user-drag:none;user-drag:none}
 .ghost.spinning{animation:spinDriver .275s linear 4;transform-origin:50% 50%}
 @keyframes spinDriver{0%{transform:scaleX(1)}50%{transform:scaleX(-1)}100%{transform:scaleX(1)}}
 
-#online{position:fixed;left:50%;top:20px;transform:translate(-50%,-20px);padding:16px 30px 18px;text-align:center;z-index:12;opacity:0;pointer-events:none;
+#online{position:fixed;left:50%;bottom:18px;transform:translate(-50%,20px);padding:16px 30px 18px;text-align:center;z-index:12;opacity:0;pointer-events:none;
   transition:opacity .5s,transform .5s cubic-bezier(.3,1.4,.5,1);border-color:rgba(62,224,138,.5)}
 #online.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 #online h2{margin:0;font:800 clamp(24px,3.4vw,40px)/1 'Orbitron',sans-serif;letter-spacing:2px;color:#9ff3ff;
@@ -203,20 +238,8 @@ img{-webkit-user-drag:none;user-drag:none}
 
 /* ---------- Narrow / phone layout ---------- */
 @media (max-width:760px){
-  #progress{left:10px;right:10px;top:10px;padding:8px 10px;min-width:0}
-  #progress h3{display:none}
-  #progress ol{flex-direction:row;justify-content:space-between;gap:4px}
-  #progress li{flex-direction:column;gap:3px;font-size:11px}
-  .dot{width:18px;height:18px}
-  #instr,#online{top:76px;padding:9px 16px 8px;width:calc(100vw - 20px)}
+  #instr,#online{bottom:10px;padding:9px 14px 8px;width:calc(100vw - 20px)}
   #instr .sub{font-size:12px}
-  #bin{left:50%;right:auto;top:auto;bottom:10px;transform:translate(-50%,calc(100% + 40px));padding:8px 10px 6px}
-  #bin.show{transform:translate(-50%,0)}
-  #bin h3{display:none}
-  #bin .cells{flex-direction:row;gap:8px}
-  .cell{width:96px;padding:6px 4px 5px}
-  .cell span{font-size:11px}
-  .cell.empty::after{bottom:22px}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important}
@@ -227,12 +250,56 @@ img{-webkit-user-drag:none;user-drag:none}
 <div id="backdrop"></div>
 <div id="stage"><div id="cam">
   <div id="platformGlow"></div>
+  <div id="dim"></div>
+
+  <!-- shelf items -->
+  <div class="pad" id="padBattery"></div><div class="pad" id="padMemory"></div>
+  <img class="part" id="pickBattery" data-part="battery" src="battery-parts.svg" alt="Battery on the shelf">
+  <img class="part" id="pickMemory" data-part="memory" src="memory%20card-parts.svg" alt="Memory card on the shelf">
+
+  <!-- tool drawer (drawn over the cart's top drawer) -->
+  <div id="drawer">
+    <svg viewBox="0 0 1448 1086" aria-hidden="true">
+      <g id="drawerTray">
+        <polygon points="67,743 162,727 162,830 67,850" fill="#121419"/>
+        <polygon points="67,743 162,727 182,742 87,758" fill="#07090c" stroke="#1d2027" stroke-width="2" stroke-linejoin="round"/>
+      </g>
+    </svg>
+    <div id="driverClip"><img class="part" id="pickDriver" data-part="screw" src="screw%20driver-parts.svg" alt="Screwdriver"></div>
+    <svg viewBox="0 0 1448 1086">
+      <defs><filter id="dglow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+      <g class="front" id="drawerFront" role="button" tabindex="-1" aria-label="Tool drawer">
+        <polygon class="body" points="67,743 162,727 162,820 67,843"/>
+        <line class="strip" x1="83" y1="766" x2="147" y2="752" filter="url(#dglow)"/>
+        <line class="strip" x1="83" y1="803" x2="147" y2="788" filter="url(#dglow)"/>
+        <polygon class="ring" points="63,739 166,722 166,824 63,848" filter="url(#dglow)"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="hint l" id="hintBattery">BATTERY</div>
+  <div class="hint" id="hintMemory">MEMORY CARD</div>
+  <div class="hint l" id="hintDrawer">TOOL DRAWER</div>
+  <div class="hint l" id="hintDriver">SCREWDRIVER</div>
+
   <div id="robot" class="off">
     <div id="robotInner">
       <img id="feet" src="Robot-feets.svg" alt="">
       <img class="arm left" src="left-arm.svg" alt="">
       <img class="arm right" src="right-arm.svg" alt="">
-      <div id="head"><img id="headImg" src="dead-head.png" alt="Robot head"><div id="antennaGlow"></div></div>
+      <div id="head"><img id="headImg" src="dead-head.png" alt="Robot head"><div id="antennaGlow"></div>
+        <div id="diag" aria-label="Repair progress">
+          <h4><span>SYSTEM CHECK</span><b id="diagPct">0%</b></h4>
+          <ol>
+            <li data-k="wire"><span class="dot">✓</span>WIRE</li>
+            <li data-k="battery"><span class="dot">✓</span>BATTERY</li>
+            <li data-k="screw"><span class="dot">✓</span>SCREW</li>
+            <li data-k="memory"><span class="dot">✓</span>MEMORY</li>
+            <li data-k="power"><span class="dot">✓</span>POWER</li>
+          </ol>
+          <div class="bar"><i id="diagBar"></i></div>
+        </div>
+      </div>
       <div id="bodyWrap">
         <svg id="interior" viewBox="0 0 111 107" aria-label="Robot interior"></svg>
         <div id="door" role="button" tabindex="0" aria-label="ACCESS panel">
@@ -250,27 +317,7 @@ img{-webkit-user-drag:none;user-drag:none}
 </div></div>
 <div id="vignette"></div>
 
-<aside id="progress" class="panel" aria-label="Repair progress">
-  <h3>REPAIR PROGRESS</h3>
-  <ol>
-    <li data-k="wire"><span class="dot">✓</span>Wire</li>
-    <li data-k="battery"><span class="dot">✓</span>Battery</li>
-    <li data-k="screw"><span class="dot">✓</span>Screw</li>
-    <li data-k="memory"><span class="dot">✓</span>Memory</li>
-    <li data-k="power"><span class="dot">✓</span>Power</li>
-  </ol>
-</aside>
-
 <div id="instr" class="panel" role="status" aria-live="polite"><div class="main"></div><div class="sub"></div></div>
-
-<aside id="bin" class="panel" aria-label="Parts bin">
-  <h3>PARTS BIN</h3>
-  <div class="cells">
-    <div class="cell" data-part="battery"><b class="grip">DRAG</b><div class="well"><img class="part" data-part="battery" src="battery-parts.svg" alt="Battery"></div><span>Battery</span></div>
-    <div class="cell" data-part="screw"><b class="grip">DRAG</b><div class="well"><img class="part" data-part="screw" src="screw%20driver-parts.svg" alt="Screwdriver"></div><span>Screwdriver</span></div>
-    <div class="cell" data-part="memory"><b class="grip">DRAG</b><div class="well"><img class="part" data-part="memory" src="memory%20card-parts.svg" alt="Memory card"></div><span>Memory card</span></div>
-  </div>
-</aside>
 
 <div id="online" class="panel" role="alert">
   <h2>SYSTEM ONLINE!</h2>
@@ -284,7 +331,7 @@ img{-webkit-user-drag:none;user-drag:none}
 const $ = s => document.querySelector(s);
 const NS = 'http://www.w3.org/2000/svg';
 const stage = $('#stage'), cam = $('#cam'), robot = $('#robot'), door = $('#door'), powerBtn = $('#powerBtn');
-const headImg = $('#headImg'), svg = $('#interior'), bin = $('#bin'), instr = $('#instr');
+const headImg = $('#headImg'), svg = $('#interior'), instr = $('#instr'), drawer = $('#drawer'), drawerFront = $('#drawerFront');
 
 /* ---------- Sound effects (synthesised with the Web Audio API, no audio files) ---------- */
 const Sfx = (() => {
@@ -357,6 +404,20 @@ const Sfx = (() => {
       tone(out, 'square', 1900, 0.004, 0.05, 0.12, 1300);
       tone(out, 'sine', 420, 0, 0.07, 0.35, 180);
     },
+    // Drawer: short soft slide (filtered noise sweep)
+    slide(){
+      const out = voice('slide', 0.2, 0.35); if (!out) return;
+      const t = ctx.currentTime;
+      const src = ctx.createBufferSource(); src.buffer = noise; src.loop = true;
+      const lp = ctx.createBiquadFilter(); lp.type = 'bandpass'; lp.Q.value = 1.2;
+      lp.frequency.setValueAtTime(500, t); lp.frequency.exponentialRampToValueAtTime(1600, t + 0.22);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.35, t + 0.04);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.26);
+      src.connect(lp).connect(g).connect(out);
+      src.start(t); src.stop(t + 0.28);
+      tone(out, 'sine', 160, 0.2, 0.08, 0.25, 110);
+    },
     // Wrong placement: soft, short low "bonk"
     error(){
       const out = voice('error', 0.25, 0.25); if (!out) return;
@@ -405,9 +466,10 @@ const NATIVE = { battery:{w:34,h:54}, screw:{w:16,h:76}, memory:{w:33.22,h:41.17
 const TEXT = {
   open:   ['Repair the robot.',        'Click the glowing ACCESS panel to open it'],
   wire:   ['Connect the wire.',        'Drag the glowing wire end to the connector'],
-  battery:['Install the battery.',     'Drag the battery into the empty battery slot'],
+  battery:['Get the battery.',         'Drag the battery from the shelf into the glowing slot'],
+  drawer: ['Open the tool drawer.',    'Click the glowing drawer to find the screwdriver'],
   screw:  ['Tighten the screw.',       'Drag the screwdriver to the loose screw'],
-  memory: ['Insert the memory card.',  'Drag the memory card into its slot'],
+  memory: ['Get the memory card.',     'Drag the memory card from the shelf into its slot'],
   close:  ['Close the panel.',         'All repairs done — click the ACCESS panel'],
   power:  ['Press power.',             'Click the glowing power button'],
   booting:['Booting…',                 ''],
@@ -417,18 +479,15 @@ const ORDER = ['wire','battery','screw','memory','power'];
 let step = 'open', busy = false;
 
 /* ---------- Layout ---------- */
+// Frame the camera so the shelf, the tool cart and the robot are always in view.
 function fit(){
-  const s = innerHeight / 1086;
-  stage.style.transform = `translate(-50%,-50%) scale(${s})`;
-  const narrow = innerWidth <= 760;
-  cam.style.setProperty('--z', narrow ? 1.22 : 1.6);
-  const bs = narrow ? Math.min(1.35, innerHeight/620, (innerWidth-60)/3/40)
-                    : Math.max(1.05, Math.min(1.7, (innerHeight-170)/ (54+76+41+75)));
-  document.querySelectorAll('.part').forEach(p => {
-    const n = NATIVE[p.dataset.part];
-    p.style.width = n.w*bs + 'px'; p.style.height = n.h*bs + 'px';
-  });
-  document.querySelectorAll('.cell .well').forEach(w => w.style.minHeight = (narrow ? 76 : 41)*bs + 'px');
+  const vw = innerWidth, vh = innerHeight, FY0 = 130, FY1 = 870;
+  const wide = vw / vh >= 1.2;
+  const s = Math.min(vh / (FY1 - FY0), vw / (wide ? 1440 : 980));
+  const W = vw / s, H = vh / s;
+  const left = (wide || W >= 1440) ? 724 - W/2 : 4;    // robot centred, or left-anchored on narrow screens
+  const top = H >= 1086 ? (1086 - H)/2 : Math.min(Math.max((FY0 + FY1)/2 - H/2, 0), 1086 - H);
+  stage.style.transform = `translate(${-left*s}px,${-top*s}px) scale(${s})`;
 }
 addEventListener('resize', fit);
 
@@ -444,13 +503,16 @@ function buildInterior(){
   <defs>
     <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="1.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
     <radialGradient id="screwGrad" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#f6f9fc"/><stop offset="1" stop-color="#8592a5"/></radialGradient>
-    <linearGradient id="cavity" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d1f3d"/><stop offset="1" stop-color="#050d1c"/></linearGradient>
-    <pattern id="grid" width="6" height="6" patternUnits="userSpaceOnUse"><path d="M6 0H0V6" fill="none" stroke="#1b3762" stroke-width=".25"/></pattern>
+    <linearGradient id="cavity" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c4a86"/><stop offset="1" stop-color="#0c2752"/></linearGradient>
+    <radialGradient id="cavityLight" cx=".5" cy=".25" r=".75"><stop offset="0" stop-color="#7fd4ff" stop-opacity=".35"/><stop offset="1" stop-color="#7fd4ff" stop-opacity="0"/></radialGradient>
+    <pattern id="grid" width="6" height="6" patternUnits="userSpaceOnUse"><path d="M6 0H0V6" fill="none" stroke="#3a76bd" stroke-width=".25"/></pattern>
   </defs>
   <rect x=".4" y=".4" width="110.2" height="106.2" rx="6" fill="#d9dde3" stroke="#a5adb9" stroke-width=".8"/>
-  <rect x="4.5" y="4.5" width="102" height="98" rx="3.5" fill="url(#cavity)" stroke="#4d5a70" stroke-width=".6"/>
-  <rect x="4.5" y="4.5" width="102" height="98" rx="3.5" fill="url(#grid)" opacity=".7"/>
-  <path d="M58 14H78V24M66 46V40H100V60M44 74H54V62M8 104" fill="none" stroke="#1f6fb2" stroke-width=".5" opacity=".55"/>
+  <rect x="4.5" y="4.5" width="102" height="98" rx="3.5" fill="url(#cavity)"/>
+  <rect x="4.5" y="4.5" width="102" height="98" rx="3.5" fill="url(#grid)" opacity=".8"/>
+  <rect x="4.5" y="4.5" width="102" height="98" rx="3.5" fill="url(#cavityLight)"/>
+  <rect x="4.5" y="4.5" width="102" height="98" rx="3.5" fill="none" stroke="#5fdcff" stroke-width=".7" opacity=".9"/>
+  <path d="M58 14H78V24M66 46V40H100V60M44 74H54V62M8 104" fill="none" stroke="#4fb4ff" stroke-width=".55" opacity=".8"/>
   <rect x="1.2" y="20" width="2.2" height="12" rx="1" fill="#8a94a3"/><rect x="1.2" y="75" width="2.2" height="12" rx="1" fill="#8a94a3"/>
 
   <!-- Wire connector -->
@@ -556,26 +618,23 @@ function setStep(s){
     }, s === 'open' ? 0 : 200);
     instr.style.display = '';
   } else instr.style.display = 'none';
-  // progress
-  const idx = ORDER.indexOf(s === 'booting' ? 'power' : s);
-  document.querySelectorAll('#progress li').forEach(li => {
+  // progress checklist on the robot's head screen
+  const idx = ORDER.indexOf(s === 'drawer' ? 'screw' : s);
+  const doneUpTo = s === 'online' || s === 'booting' ? ORDER.length : s === 'close' || s === 'power' ? 4 : Math.max(idx, 0);
+  document.querySelectorAll('#diag li').forEach(li => {
     const k = ORDER.indexOf(li.dataset.k);
-    const doneUpTo = s === 'online' ? ORDER.length : s === 'close' || s === 'power' || s === 'booting' ? 4 : Math.max(idx, 0);
     li.classList.toggle('done', k < doneUpTo);
     li.classList.toggle('current', k === idx && k >= doneUpTo);
   });
+  $('#diagPct').textContent = Math.round(doneUpTo / ORDER.length * 100) + '%';
+  $('#diagBar').style.width = doneUpTo / ORDER.length * 100 + '%';
   // slots
   document.querySelectorAll('.slot').forEach(g => g.classList.remove('target'));
   const slotMap = {wire:'#slotWire', battery:'#slotBattery', screw:'#slotScrew', memory:'#slotMemory'};
   if (slotMap[s]) $(slotMap[s]).classList.add('target');
-  // parts bin
-  document.querySelectorAll('.cell').forEach(c => {
-    const on = c.dataset.part === s;
-    c.classList.toggle('active', on);
-    c.querySelector('.part').classList.toggle('active', on);
-  });
-  bin.classList.toggle('show', ['wire','battery','screw','memory','close'].includes(s));
-  bin.classList.toggle('dim', s === 'wire' || s === 'close');
+  // scene pickups: only the current one is live
+  document.querySelectorAll('.part').forEach(p => p.classList.toggle('active', p.dataset.part === s));
+  drawerFront.setAttribute('tabindex', s === 'drawer' ? 0 : -1);
   door.tabIndex = (s === 'open' || s === 'close') ? 0 : -1;
   powerBtn.tabIndex = s === 'power' ? 0 : -1;
 }
@@ -591,7 +650,8 @@ function doorActivate(e){
   if (step === 'open'){
     busy = true;
     door.classList.add('open');
-    cam.classList.add('zoom');
+    document.body.classList.add('focus');
+    robot.classList.add('diag');
     setStep('wire_wait');
     document.body.dataset.step = 'opening';
     setTimeout(() => { busy = false; setStep('wire'); }, 850);
@@ -599,7 +659,7 @@ function doorActivate(e){
     busy = true;
     document.body.dataset.step = 'closing';
     door.classList.remove('open');
-    setTimeout(() => cam.classList.remove('zoom'), 450);
+    setTimeout(() => document.body.classList.remove('focus'), 450);
     setTimeout(() => { busy = false; setStep('power'); }, 1250);
   } else if (step !== 'power') nudge();
 }
@@ -619,6 +679,7 @@ function powerActivate(e){
   powerBtn.classList.add('pressed');
   setTimeout(() => powerBtn.classList.remove('pressed'), 150);
   setTimeout(() => { robot.classList.remove('off'); document.body.classList.add('alive-scene'); }, 250);
+  setTimeout(() => robot.classList.remove('diag'), 520);
   setTimeout(() => {
     headImg.classList.add('flicker');
     setTimeout(() => { headImg.src = 'smile-head.svg'; }, 330);
@@ -643,7 +704,7 @@ function sparkle(){
     st.className = 'star';
     const ang = Math.random()*Math.PI*2, dist = 160 + Math.random()*170;
     st.style.left = (724 + Math.cos(ang)*60) + 'px';
-    st.style.top = (470 + Math.sin(ang)*90) + 'px';
+    st.style.top = (500 + Math.sin(ang)*90) + 'px';
     st.style.setProperty('--dx', Math.cos(ang)*dist + 'px');
     st.style.setProperty('--dy', Math.sin(ang)*dist*.8 + 'px');
     st.style.animationDelay = (Math.random()*.35) + 's';
@@ -708,8 +769,7 @@ document.querySelectorAll('.part').forEach(p => {
     if (busy || drag) return;
     if (!p.classList.contains('active')){
       e.preventDefault();
-      const cell = p.closest('.cell');
-      cell.classList.remove('shake'); void cell.offsetWidth; cell.classList.add('shake');
+      shake(p);
       nudge();
       return;
     }
@@ -720,7 +780,15 @@ document.querySelectorAll('.part').forEach(p => {
     Object.assign(g.style, {left:r.left+'px', top:r.top+'px', width:r.width+'px', height:r.height+'px'});
     document.body.appendChild(g);
     p.classList.add('lifted');
-    drag = { part:p.dataset.part, el:p, g, id:e.pointerId, ox:e.clientX - r.left, oy:e.clientY - r.top, w:r.width, h:r.height, home:r, over:false };
+    // grow to the robot's scale so the part matches its slot
+    const n = NATIVE[p.dataset.part], k = unitsToScreen(0, 0).k, w = n.w*k, h = n.h*k;
+    const ox = (e.clientX - r.left) * w / r.width, oy = (e.clientY - r.top) * h / r.height;
+    requestAnimationFrame(() => {
+      g.classList.add('anim');
+      Object.assign(g.style, {left:e.clientX - ox + 'px', top:e.clientY - oy + 'px', width:w + 'px', height:h + 'px'});
+      setTimeout(() => g.classList.remove('anim'), 280);
+    });
+    drag = { part:p.dataset.part, el:p, g, id:e.pointerId, ox, oy, w, h, home:r, over:false };
     try { p.setPointerCapture(e.pointerId); } catch(_){}
   });
   p.addEventListener('pointermove', dragMove);
@@ -755,8 +823,9 @@ function moveGhost(g, r, cls){
   g.classList.add(cls);
   Object.assign(g.style, {left:r.left+'px', top:r.top+'px', width:r.width+'px', height:r.height+'px'});
 }
+function shake(el){ el.classList.remove('nope'); void el.offsetWidth; el.classList.add('nope'); }
 function returnHome(d, after){
-  moveGhost(d.g, d.home, 'back');
+  moveGhost(d.g, d.el.getBoundingClientRect(), 'back');
   setTimeout(() => { d.g.remove(); d.el.classList.remove('lifted'); after && after(); }, 420);
 }
 
@@ -769,7 +838,7 @@ function dragEnd(e){
   if (!d.over){
     // wrong place → back to the Parts Bin
     Sfx.error();
-    returnHome(d, () => { const c = d.el.closest('.cell'); c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake'); });
+    returnHome(d, () => shake(d.el));
     return;
   }
   busy = true;
@@ -779,14 +848,13 @@ function dragEnd(e){
   setTimeout(() => {
     d.g.remove();
     d.el.classList.remove('lifted'); d.el.classList.add('used');
-    d.el.closest('.cell').classList.add('empty');
     target.classList.add('on');
     slot.classList.add('done');
     Sfx.click();
     setTimeout(Sfx.chime, 160);
     if (d.part === 'battery'){
       addCheck(44, 46);
-      setTimeout(() => { busy = false; setStep('screw'); }, 700);
+      setTimeout(() => { busy = false; setStep('drawer'); }, 700);
     } else {
       setTimeout(() => $('#memLed').classList.add('on'), 200);
       addCheck(95, 97);
@@ -818,9 +886,25 @@ function tightenScrew(){
     Sfx.click();
     setTimeout(Sfx.chime, 160);
     d.g.style.transform = '';
-    returnHome(d, () => { busy = false; setStep('memory'); });
+    returnHome(d, () => {
+      drawer.classList.remove('open');
+      Sfx.slide();
+      setTimeout(() => { busy = false; setStep('memory'); }, 450);
+    });
   }, 1450);
 }
+
+/* ---------- Tool drawer ---------- */
+function drawerActivate(){
+  if (busy) return;
+  if (step !== 'drawer'){ nudge(); return; }
+  busy = true;
+  drawer.classList.add('open');
+  Sfx.slide();
+  setTimeout(() => { busy = false; setStep('screw'); }, 650);
+}
+drawerFront.addEventListener('click', drawerActivate);
+drawerFront.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); drawerActivate(); } });
 
 /* ---------- Restart ---------- */
 function reset(){
@@ -830,10 +914,11 @@ function reset(){
   document.body.classList.remove('alive-scene');
   robot.classList.add('off');
   door.classList.remove('open');
-  cam.classList.remove('zoom');
+  drawer.classList.remove('open');
+  document.body.classList.remove('focus');
+  robot.classList.remove('diag');
   headImg.src = 'dead-head.png';
-  document.querySelectorAll('.part').forEach(p => p.classList.remove('used','lifted'));
-  document.querySelectorAll('.cell').forEach(c => c.classList.remove('empty'));
+  document.querySelectorAll('.part').forEach(p => p.classList.remove('used','lifted','nope'));
   buildInterior();
   setStep('open');
 }
